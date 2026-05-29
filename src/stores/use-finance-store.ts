@@ -74,6 +74,13 @@ async function loadAllData() {
   };
 }
 
+async function refreshInsightsForData(data: Awaited<ReturnType<typeof loadAllData>>) {
+  const month = format(new Date(), "yyyy-MM");
+  const budget = data.budgets.find((item) => item.month === month);
+  await refreshMonthlyInsights(data.transactions, data.categories, budget);
+  return insightRepository.list();
+}
+
 export const useFinanceStore = create<FinanceState>()(
   persist(
     (set, get) => ({
@@ -97,17 +104,20 @@ export const useFinanceStore = create<FinanceState>()(
       addTransaction: async (item) => {
         await transactionRepository.create(item);
         const data = await loadAllData();
-        set(data);
+        const insights = await refreshInsightsForData(data);
+        set({ ...data, insights });
       },
       updateTransaction: async (id, item) => {
         await transactionRepository.update(id, item);
         const data = await loadAllData();
-        set(data);
+        const insights = await refreshInsightsForData(data);
+        set({ ...data, insights });
       },
       deleteTransaction: async (id) => {
         await transactionRepository.remove(id);
         const data = await loadAllData();
-        set(data);
+        const insights = await refreshInsightsForData(data);
+        set({ ...data, insights });
       },
       saveBudget: async (budget) => {
         await budgetRepository.upsert(budget);

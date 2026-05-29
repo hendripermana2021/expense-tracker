@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -9,6 +10,7 @@ import { useFinanceStore } from "@/stores/use-finance-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Transaction } from "@/types";
 
 const transactionSchema = z.object({
   title: z.string().min(2),
@@ -24,40 +26,77 @@ const transactionSchema = z.object({
 
 type TransactionInput = z.infer<typeof transactionSchema>;
 
-export function TransactionFormModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { categories, wallets, addTransaction } = useFinanceStore();
+const getDefaultValues = (transaction?: Transaction): TransactionInput => ({
+  title: transaction?.title ?? "",
+  amount: transaction?.amount ?? 0,
+  categoryId: transaction?.categoryId ?? "",
+  walletId: transaction?.walletId ?? "",
+  note: transaction?.note ?? "",
+  date: transaction ? new Date(transaction.date).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+  type: transaction?.type ?? "expense",
+  mood: transaction?.mood ?? "neutral",
+  recurring: transaction?.recurring ?? false,
+});
+
+export function TransactionFormModal({
+  open,
+  onClose,
+  transaction,
+}: {
+  open: boolean;
+  onClose: () => void;
+  transaction?: Transaction | null;
+}) {
+  const { categories, wallets, addTransaction, updateTransaction } = useFinanceStore();
+  const editing = Boolean(transaction);
 
   const form = useForm<TransactionInput>({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      title: "",
-      amount: 0,
-      categoryId: categories[0]?.id ?? "",
-      walletId: wallets[0]?.id ?? "",
-      note: "",
-      date: new Date().toISOString().slice(0, 16),
-      type: "expense",
-      mood: "neutral",
-      recurring: false,
-    },
+    defaultValues: getDefaultValues(transaction ?? undefined),
   });
+
+  useEffect(() => {
+    if (!open) return;
+
+    form.reset({
+      ...getDefaultValues(transaction ?? undefined),
+      categoryId: transaction?.categoryId ?? categories[0]?.id ?? "",
+      walletId: transaction?.walletId ?? wallets[0]?.id ?? "",
+    });
+  }, [categories, form, open, transaction, wallets]);
 
   const submit = form.handleSubmit(async (values) => {
     const now = new Date().toISOString();
-    await addTransaction({
-      id: uuidv4(),
-      title: values.title,
-      amount: values.amount,
-      categoryId: values.categoryId,
-      walletId: values.walletId,
-      note: values.note,
-      date: new Date(values.date).toISOString(),
-      type: values.type,
-      mood: values.mood,
-      recurring: values.recurring,
-      createdAt: now,
-      updatedAt: now,
-    });
+
+    if (transaction) {
+      await updateTransaction(transaction.id, {
+        title: values.title,
+        amount: values.amount,
+        categoryId: values.categoryId,
+        walletId: values.walletId,
+        note: values.note,
+        date: new Date(values.date).toISOString(),
+        type: values.type,
+        mood: values.mood,
+        recurring: values.recurring,
+        updatedAt: now,
+      });
+    } else {
+      await addTransaction({
+        id: uuidv4(),
+        title: values.title,
+        amount: values.amount,
+        categoryId: values.categoryId,
+        walletId: values.walletId,
+        note: values.note,
+        date: new Date(values.date).toISOString(),
+        type: values.type,
+        mood: values.mood,
+        recurring: values.recurring,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
 
     form.reset();
     onClose();
@@ -75,8 +114,10 @@ export function TransactionFormModal({ open, onClose }: { open: boolean; onClose
         className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-auto rounded-3xl border border-white/30 bg-white/90 p-5 dark:border-white/10 dark:bg-slate-900/90"
       >
         <div>
-          <h3 className="text-lg font-semibold">Quick Add Transaction</h3>
-          <p className="text-sm text-muted-foreground">Local-first and instantly saved to your device.</p>
+          <h3 className="text-lg font-semibold">{editing ? "Edit Transaction" : "Quick Add Transaction"}</h3>
+          <p className="text-sm text-muted-foreground">
+            {editing ? "Update any transaction field and save it instantly on your device." : "Local-first and instantly saved to your device."}
+          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -135,7 +176,7 @@ export function TransactionFormModal({ open, onClose }: { open: boolean; onClose
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">Save Transaction</Button>
+          <Button type="submit">{editing ? "Update Transaction" : "Save Transaction"}</Button>
         </div>
       </motion.form>
     </div>

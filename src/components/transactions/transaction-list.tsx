@@ -1,25 +1,91 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { endOfMonth, format, startOfMonth, subDays } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { useFinanceStore } from "@/stores/use-finance-store";
 import { formatCurrency } from "@/services/format-service";
 import { formatHumanDate } from "@/utils/date";
+import { TransactionFormModal } from "@/components/transactions/transaction-form-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Transaction } from "@/types";
 
-export function TransactionList() {
-  const { categories, settings, filteredTransactions, query, setQuery, deleteTransaction, updateTransaction } = useFinanceStore();
-  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
-  const [selected, setSelected] = useState<Transaction | null>(null);
-  const [draftNote, setDraftNote] = useState("");
+const currentMonth = format(new Date(), "yyyy-MM");
+const currentMonthStart = format(startOfMonth(new Date()), "yyyy-MM-dd");
+const currentMonthEnd = format(endOfMonth(new Date()), "yyyy-MM-dd");
 
-  const list = filteredTransactions().filter((item) => (typeFilter === "all" ? true : item.type === typeFilter));
+const quickRanges = [
+  {
+    label: "Today",
+    getRange: () => {
+      const today = format(new Date(), "yyyy-MM-dd");
+      return { month: "", from: today, to: today };
+    },
+  },
+  {
+    label: "Last 7 days",
+    getRange: () => ({
+      month: "",
+      from: format(subDays(new Date(), 6), "yyyy-MM-dd"),
+      to: format(new Date(), "yyyy-MM-dd"),
+    }),
+  },
+  {
+    label: "This month",
+    getRange: () => ({
+      month: currentMonth,
+      from: currentMonthStart,
+      to: currentMonthEnd,
+    }),
+  },
+];
+
+export function TransactionList() {
+  const { categories, settings, transactions, query, setQuery, deleteTransaction } = useFinanceStore();
+  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  const [monthFilter, setMonthFilter] = useState(currentMonth);
+  const [fromDate, setFromDate] = useState(currentMonthStart);
+  const [toDate, setToDate] = useState(currentMonthEnd);
+  const [selected, setSelected] = useState<Transaction | null>(null);
+
+  const list = useMemo(
+    () =>
+      transactions.filter((item) => {
+        const lowered = query.trim().toLowerCase();
+        const transactionDate = item.date.slice(0, 10);
+
+        if (
+          lowered &&
+          !item.title.toLowerCase().includes(lowered) &&
+          !item.note?.toLowerCase().includes(lowered)
+        ) {
+          return false;
+        }
+
+        if (typeFilter !== "all" && item.type !== typeFilter) {
+          return false;
+        }
+
+        if (monthFilter && !item.date.startsWith(monthFilter)) {
+          return false;
+        }
+
+        if (fromDate && transactionDate < fromDate) {
+          return false;
+        }
+
+        if (toDate && transactionDate > toDate) {
+          return false;
+        }
+
+        return true;
+      }),
+    [fromDate, monthFilter, query, toDate, transactions, typeFilter],
+  );
 
   const byMood = useMemo(
     () =>
@@ -30,14 +96,38 @@ export function TransactionList() {
     [list],
   );
 
+  const totals = useMemo(
+    () =>
+      list.reduce(
+        (acc, tx) => {
+          if (tx.type === "income") {
+            acc.income += tx.amount;
+          } else {
+            acc.expense += tx.amount;
+          }
+
+          acc.net = acc.income - acc.expense;
+          return acc;
+        },
+        { income: 0, expense: 0, net: 0 },
+      ),
+    [list],
+  );
+
+  const applyRange = (range: { month: string; from: string; to: string }) => {
+    setMonthFilter(range.month);
+    setFromDate(range.from);
+    setToDate(range.to);
+  };
+
   return (
     <Card>
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-col gap-3">
         <div>
           <CardTitle>Transaction Journal</CardTitle>
           <CardDescription>Search, filter, and manage every movement</CardDescription>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center">
           <Input
             data-search-input="true"
             placeholder="Search title or note..."
@@ -54,10 +144,60 @@ export function TransactionList() {
             <option value="expense">Expense</option>
             <option value="income">Income</option>
           </select>
+          <Input
+            type="month"
+            className="w-full sm:w-[180px]"
+            value={monthFilter}
+            onChange={(event) => {
+              const nextMonth = event.target.value;
+
+              if (!nextMonth) {
+                applyRange({ month: "", from: "", to: "" });
+                return;
+              }
+
+              const [year, month] = nextMonth.split("-").map(Number);
+              const start = `${nextMonth}-01`;
+              const end = `${nextMonth}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`;
+              applyRange({ month: nextMonth, from: start, to: end });
+            }}
+          />
+          <Input
+            type="date"
+            className="w-full sm:w-[170px]"
+            value={fromDate}
+            onChange={(event) => setFromDate(event.target.value)}
+          />
+          <Input
+            type="date"
+            className="w-full sm:w-[170px]"
+            value={toDate}
+            min={fromDate || undefined}
+            onChange={(event) => setToDate(event.target.value)}
+          />
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setTypeFilter("all");
+              applyRange({ month: "", from: "", to: "" });
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {quickRanges.map((range) => (
+            <Button key={range.label} variant="secondary" size="sm" onClick={() => applyRange(range.getRange())}>
+              {range.label}
+            </Button>
+          ))}
         </div>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
+        <Badge variant="success">Income: {formatCurrency(totals.income, settings?.currency, settings?.locale)}</Badge>
+        <Badge variant="warning">Expense: {formatCurrency(totals.expense, settings?.currency, settings?.locale)}</Badge>
+        <Badge variant="secondary">Net: {formatCurrency(totals.net, settings?.currency, settings?.locale)}</Badge>
         {Object.entries(byMood).map(([mood, count]) => (
           <Badge key={mood} variant="secondary">
             {mood}: {count}
@@ -73,7 +213,7 @@ export function TransactionList() {
             const category = categories.find((item) => item.id === tx.categoryId);
             return (
               <div key={tx.id} className="flex items-center justify-between rounded-2xl border border-border/70 p-3">
-                <button type="button" className="text-left" onClick={() => { setSelected(tx); setDraftNote(tx.note ?? ""); }}>
+                <button type="button" className="text-left" onClick={() => setSelected(tx)}>
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{tx.title}</p>
                     <Badge variant="secondary">{category?.name ?? "Unknown"}</Badge>
@@ -97,42 +237,7 @@ export function TransactionList() {
         </div>
       )}
 
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4" onClick={() => setSelected(null)}>
-          <div
-            className="w-full max-w-md space-y-3 rounded-3xl border border-white/20 bg-white p-5 dark:border-white/10 dark:bg-slate-900"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">Transaction Detail</h3>
-            <div className="space-y-1 text-sm">
-              <p>
-                <span className="text-muted-foreground">Title:</span> {selected.title}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Date:</span> {formatHumanDate(selected.date)}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Mood:</span> {selected.mood}
-              </p>
-            </div>
-            <Textarea value={draftNote} onChange={(event) => setDraftNote(event.target.value)} placeholder="Edit note..." rows={4} />
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setSelected(null)}>
-                Close
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  await updateTransaction(selected.id, { note: draftNote, updatedAt: new Date().toISOString() });
-                  setSelected(null);
-                }}
-              >
-                Save Note
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TransactionFormModal open={Boolean(selected)} transaction={selected} onClose={() => setSelected(null)} />
     </Card>
   );
 }
