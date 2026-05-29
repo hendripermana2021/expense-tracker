@@ -1,5 +1,5 @@
 import { db } from "@/database/dexie";
-import { Wallet } from "@/types";
+import type { Wallet } from "@/types";
 
 export const walletRepository = {
   async list() {

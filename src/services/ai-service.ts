@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { generateInsights } from "@/ai/insight-engine";
 import { insightRepository } from "@/repositories/insight-repository";
-import { Budget, Category, Insight, Transaction } from "@/types";
+import type { Budget, Category, Insight, Transaction } from "@/types";
 
 export async function refreshMonthlyInsights(
   transactions: Transaction[],

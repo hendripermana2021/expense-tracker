@@ -1,4 +1,4 @@
-import { Category, Wallet } from "@/types";
+import type { Category, Wallet } from "@/types";
 
 const now = new Date().toISOString();
 

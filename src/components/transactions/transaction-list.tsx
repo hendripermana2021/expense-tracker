@@ -12,7 +12,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Transaction } from "@/types";
+import type { Transaction } from "@/types";
 
 const currentMonth = format(new Date(), "yyyy-MM");
 const currentMonthStart = format(startOfMonth(new Date()), "yyyy-MM-dd");

@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Download, Upload, Cloud } from "lucide-react";
-import { createCloudSyncPayload, exportToJsonFile, importFromJsonFile } from "@/backup/backup-service";
 import { useFinanceStore } from "@/stores/use-finance-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { CURRENCIES } from "@/lib/constants";
-import { WalletType } from "@/types";
+import type { WalletType } from "@/types";
 
 export function SettingsView() {
   const {
@@ -304,7 +303,12 @@ export function SettingsView() {
         <CardTitle>Backup & Restore</CardTitle>
         <CardDescription>All data remains local. Backup is a JSON snapshot.</CardDescription>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={() => exportToJsonFile()}>
+          <Button
+            onClick={async () => {
+              const { exportToJsonFile } = await import("@/backup/backup-service");
+              await exportToJsonFile();
+            }}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export JSON
           </Button>
@@ -315,6 +319,7 @@ export function SettingsView() {
           <Button
             variant="outline"
             onClick={async () => {
+              const { createCloudSyncPayload } = await import("@/backup/backup-service");
               const payload = await createCloudSyncPayload("supabase-storage");
               console.log(payload);
               toast.success("Cloud backup payload prepared. Check browser console.");
@@ -335,6 +340,7 @@ export function SettingsView() {
           onChange={async (event) => {
             const file = event.target.files?.[0];
             if (!file) return;
+            const { importFromJsonFile } = await import("@/backup/backup-service");
             await importFromJsonFile(file);
             toast.success("Backup restored successfully.");
             window.location.reload();

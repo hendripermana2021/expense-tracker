@@ -1,5 +1,5 @@
 import { db } from "@/database/dexie";
-import { RecurringTransaction } from "@/types";
+import type { RecurringTransaction } from "@/types";
 
 export const recurringRepository = {
   async list() {

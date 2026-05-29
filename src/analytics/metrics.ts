@@ -1,5 +1,5 @@
 import { endOfMonth, format, isSameMonth, startOfMonth, subMonths } from "date-fns";
-import { Budget, Category, DashboardStats, Transaction, Wallet } from "@/types";
+import type { Budget, Category, DashboardStats, Transaction, Wallet } from "@/types";
 import { DEFAULT_WALLET_TOTAL_BALANCE } from "@/lib/constants";
 
 const sum = (values: number[]) => values.reduce((acc, value) => acc + value, 0);

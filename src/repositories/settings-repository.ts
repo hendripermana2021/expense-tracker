@@ -1,5 +1,5 @@
 import { db } from "@/database/dexie";
-import { AppSettings } from "@/types";
+import type { AppSettings } from "@/types";
 
 export const settingsRepository = {
   async get() {

@@ -10,7 +10,7 @@ import { useFinanceStore } from "@/stores/use-finance-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Transaction } from "@/types";
+import type { Transaction } from "@/types";
 
 const transactionSchema = z.object({
   title: z.string().min(2),

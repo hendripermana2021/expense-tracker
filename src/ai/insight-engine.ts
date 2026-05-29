@@ -1,6 +1,6 @@
 import { format, isAfter, subDays } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
-import { Budget, Category, Insight, Transaction } from "@/types";
+import type { Budget, Category, Insight, Transaction } from "@/types";
 import { compareWithPreviousMonth, monthlyTotals } from "@/analytics/metrics";
 
 function formatPercent(value: number) {

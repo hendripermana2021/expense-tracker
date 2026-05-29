@@ -1,5 +1,5 @@
 import { db } from "@/database/dexie";
-import { BackupPayload } from "@/types";
+import type { BackupPayload } from "@/types";
 
 const BACKUP_VERSION = "1.0.0";
 

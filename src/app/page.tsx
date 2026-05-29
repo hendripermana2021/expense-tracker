@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 
 export default function Home() {

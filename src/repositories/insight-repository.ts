@@ -1,5 +1,5 @@
 import { db } from "@/database/dexie";
-import { Insight } from "@/types";
+import type { Insight } from "@/types";
 
 export const insightRepository = {
   async list() {
