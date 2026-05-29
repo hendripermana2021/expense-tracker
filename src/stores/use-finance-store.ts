@@ -17,6 +17,7 @@ import {
   RecurringTransaction,
   Transaction,
   Wallet,
+  WalletType,
 } from "@/types";
 
 interface FinanceState {
@@ -37,9 +38,19 @@ interface FinanceState {
   deleteTransaction: (id: string) => Promise<void>;
   saveBudget: (budget: Budget) => Promise<void>;
   saveSettings: (settings: AppSettings) => Promise<void>;
+  createWallet: (name: string, type: WalletType, balance: number) => Promise<void>;
+  updateWalletBalance: (id: string, balance: number) => Promise<void>;
+  deleteWallet: (id: string) => Promise<void>;
   refreshInsights: () => Promise<void>;
   filteredTransactions: () => Transaction[];
 }
+
+const walletTypeMeta: Record<WalletType, { color: string; icon: string }> = {
+  cash: { color: "#14b8a6", icon: "Wallet" },
+  bank: { color: "#3b82f6", icon: "Building2" },
+  ewallet: { color: "#f97316", icon: "Smartphone" },
+  credit: { color: "#6366f1", icon: "CreditCard" },
+};
 
 async function loadAllData() {
   const [transactions, wallets, categories, budgets, insights, recurringTransactions, settings] = await Promise.all([
@@ -105,6 +116,45 @@ export const useFinanceStore = create<FinanceState>()(
       },
       saveSettings: async (settings) => {
         await settingsRepository.upsert(settings);
+        const data = await loadAllData();
+        set(data);
+      },
+      createWallet: async (name, type, balance) => {
+        const nowIso = new Date().toISOString();
+        const meta = walletTypeMeta[type];
+        await walletRepository.upsert({
+          id: `wallet-${crypto.randomUUID()}`,
+          name,
+          type,
+          color: meta.color,
+          icon: meta.icon,
+          balance,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        });
+        const data = await loadAllData();
+        set(data);
+      },
+      updateWalletBalance: async (id, balance) => {
+        const wallet = get().wallets.find((item) => item.id === id);
+        if (!wallet) return;
+        await walletRepository.upsert({
+          ...wallet,
+          balance,
+          updatedAt: new Date().toISOString(),
+        });
+        const data = await loadAllData();
+        set(data);
+      },
+      deleteWallet: async (id) => {
+        if (get().wallets.length <= 1) {
+          throw new Error("At least one wallet is required.");
+        }
+        const hasTransactions = get().transactions.some((item) => item.walletId === id);
+        if (hasTransactions) {
+          throw new Error("Cannot delete wallet that still has transactions.");
+        }
+        await walletRepository.remove(id);
         const data = await loadAllData();
         set(data);
       },

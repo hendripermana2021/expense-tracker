@@ -83,6 +83,7 @@ export interface AppSettings {
 
 export interface DashboardStats {
   totalBalance: number;
+  totalBalanceDeltaPercent: number;
   monthlyIncome: number;
   monthlyExpense: number;
   remainingBudget: number;

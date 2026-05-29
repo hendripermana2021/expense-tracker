@@ -34,6 +34,17 @@ export class ExpenseTrackerDB extends Dexie {
       recurring_transactions: "id, nextDueAt, enabled, interval",
     });
 
+    // v2 adds createdAt index for insights to support orderBy("createdAt") queries.
+    this.version(2).stores({
+      transactions: "id, date, type, categoryId, walletId, recurring",
+      wallets: "id, type",
+      budgets: "id, month",
+      categories: "id, type",
+      insights: "id, month, severity, createdAt",
+      settings: "id",
+      recurring_transactions: "id, nextDueAt, enabled, interval",
+    });
+
     this.on("populate", async () => {
       const now = new Date();
       const isoNow = now.toISOString();

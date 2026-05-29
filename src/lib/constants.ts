@@ -24,6 +24,8 @@ export const DEFAULT_WALLETS: Wallet[] = [
   { id: "credit", name: "Credit Card", type: "credit", color: "#6366f1", icon: "CreditCard", balance: -220, createdAt: now, updatedAt: now },
 ];
 
+export const DEFAULT_WALLET_TOTAL_BALANCE = DEFAULT_WALLETS.reduce((acc, wallet) => acc + wallet.balance, 0);
+
 export const MOODS = ["great", "good", "neutral", "stressed"] as const;
 
 export const CURRENCIES = ["USD", "IDR", "EUR", "GBP", "JPY"];

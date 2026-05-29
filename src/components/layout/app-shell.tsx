@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Home, ReceiptText, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -24,10 +23,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Expense Intelligence</p>
           <h1 className="text-2xl font-semibold tracking-tight">Pulse Ledger</h1>
         </div>
-        <ThemeToggle />
       </div>
 
-      <nav className="mb-6 hidden rounded-2xl border border-white/20 bg-white/60 p-2 backdrop-blur-lg dark:border-white/10 dark:bg-slate-900/50 md:flex">
+      <nav className="mb-6 hidden rounded-2xl border border-white/20 bg-white/60 p-2 backdrop-blur-lg dark:border-slate-700 dark:bg-slate-950/85 md:flex">
         {navItems.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
@@ -60,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </motion.main>
       </AnimatePresence>
 
-      <nav className="fixed inset-x-4 bottom-4 z-40 rounded-2xl border border-white/25 bg-white/80 p-2 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70 md:hidden">
+      <nav className="fixed inset-x-4 bottom-4 z-40 rounded-2xl border border-white/25 bg-white/80 p-2 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-950/90 md:hidden">
         <div className="grid grid-cols-4 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;

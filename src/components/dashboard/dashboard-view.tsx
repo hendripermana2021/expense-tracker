@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowDownRight, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, PieChart, Pie, Cell } from "recharts";
-import { computeDashboardStats, spendingTrend, categoryDistribution } from "@/analytics/metrics";
+import { compareWithPreviousMonth, computeDashboardStats, spendingTrend, categoryDistribution } from "@/analytics/metrics";
 import { useFinanceStore } from "@/stores/use-finance-store";
 import { formatCurrency } from "@/services/format-service";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -32,12 +32,26 @@ export function DashboardView() {
     ? Math.round((stats.monthlyExpense / currentBudget.totalLimit) * 100)
     : 0;
 
+  const totalBalanceDeltaLabel = `${stats.totalBalanceDeltaPercent >= 0 ? "+" : ""}${stats.totalBalanceDeltaPercent.toFixed(1)}% vs start`;
+  const monthlyExpenseDelta = compareWithPreviousMonth(transactions);
+  const monthlyExpenseDeltaLabel = `${monthlyExpenseDelta >= 0 ? "+" : ""}${monthlyExpenseDelta.toFixed(1)}% vs prev month`;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Total Balance" value={formatCurrency(stats.totalBalance, settings?.currency, settings?.locale)} delta="+8.4%" positive />
+        <MetricCard
+          label="Total Balance"
+          value={formatCurrency(stats.totalBalance, settings?.currency, settings?.locale)}
+          delta={totalBalanceDeltaLabel}
+          positive={stats.totalBalanceDeltaPercent >= 0}
+        />
         <MetricCard label="Monthly Income" value={formatCurrency(stats.monthlyIncome, settings?.currency, settings?.locale)} delta="Stable" positive />
-        <MetricCard label="Monthly Expense" value={formatCurrency(stats.monthlyExpense, settings?.currency, settings?.locale)} delta="-2.8%" />
+        <MetricCard
+          label="Monthly Expense"
+          value={formatCurrency(stats.monthlyExpense, settings?.currency, settings?.locale)}
+          delta={monthlyExpenseDeltaLabel}
+          positive={monthlyExpenseDelta <= 0}
+        />
         <MetricCard label="Remaining Budget" value={formatCurrency(stats.remainingBudget, settings?.currency, settings?.locale)} delta={`${budgetUsage}% used`} positive={stats.remainingBudget >= 0} />
       </div>
 

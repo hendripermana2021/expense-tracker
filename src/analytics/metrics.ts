@@ -1,5 +1,6 @@
 import { endOfMonth, format, isSameMonth, startOfMonth, subMonths } from "date-fns";
 import { Budget, Category, DashboardStats, Transaction, Wallet } from "@/types";
+import { DEFAULT_WALLET_TOTAL_BALANCE } from "@/lib/constants";
 
 const sum = (values: number[]) => values.reduce((acc, value) => acc + value, 0);
 
@@ -17,7 +18,14 @@ export function computeDashboardStats(
   baseDate = new Date(),
 ): DashboardStats {
   const { monthlyIncome, monthlyExpense } = monthlyTotals(transactions, baseDate);
-  const totalBalance = sum(wallets.map((wallet) => wallet.balance));
+  const walletBalanceTotal = sum(wallets.map((wallet) => wallet.balance));
+  const transactionNetBalance = sum(
+    transactions.map((item) => (item.type === "income" ? item.amount : -item.amount)),
+  );
+  const totalBalance = walletBalanceTotal + transactionNetBalance;
+  const totalBalanceDeltaPercent = DEFAULT_WALLET_TOTAL_BALANCE > 0
+    ? ((totalBalance - DEFAULT_WALLET_TOTAL_BALANCE) / DEFAULT_WALLET_TOTAL_BALANCE) * 100
+    : 0;
   const dailySpend = sum(
     transactions
       .filter((item) => item.type === "expense" && format(new Date(item.date), "yyyy-MM-dd") === format(baseDate, "yyyy-MM-dd"))
@@ -33,6 +41,7 @@ export function computeDashboardStats(
 
   return {
     totalBalance,
+    totalBalanceDeltaPercent,
     monthlyIncome,
     monthlyExpense,
     remainingBudget,
