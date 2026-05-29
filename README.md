@@ -1,10 +1,10 @@
-# Pulse Ledger
+# My Flow Money
 
 A premium local-first AI-powered expense tracker built with Next.js 15.
 
 ## Why this app
 
-Pulse Ledger is designed for instant personal finance tracking with zero backend requirement.
+My Flow Money is designed for instant personal finance tracking with zero backend requirement.
 
 - Local-first with IndexedDB (Dexie)
 - Offline-first PWA

@@ -22,11 +22,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/50 bg-white/90 shadow-[0_10px_25px_rgba(37,99,235,0.18)]">
-            <Image src="/logo-mark.svg" alt="Pulse Ledger logo" width={48} height={48} priority />
+            <Image src="/logo-mark.svg" alt="My Flow Money logo" width={48} height={48} priority />
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Local-First Finance</p>
-            <h1 className="text-2xl font-semibold tracking-tight">Pulse Ledger</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">My Flow Money</h1>
           </div>
         </div>
       </div>

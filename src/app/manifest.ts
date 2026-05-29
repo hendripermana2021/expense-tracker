@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Pulse Ledger - Local-First Expense Tracker",
-    short_name: "Pulse Ledger",
+    name: "My Flow Money - Local-First Expense Tracker",
+    short_name: "My Flow Money",
     description: "Track budgets, wallets, and spending trends offline with a privacy-first local expense tracker.",
     start_url: "/",
     display: "standalone",

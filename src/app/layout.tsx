@@ -18,10 +18,10 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Pulse Ledger",
+  applicationName: "My Flow Money",
   title: {
-    default: "Pulse Ledger | Local-First Expense Tracker",
-    template: "%s | Pulse Ledger",
+    default: "My Flow Money | Local-First Expense Tracker",
+    template: "%s | My Flow Money",
   },
   description:
     "Track spending, wallets, budgets, and trends with a local-first expense tracker that works offline and keeps your data on your device.",
@@ -53,15 +53,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: siteUrl,
-    siteName: "Pulse Ledger",
-    title: "Pulse Ledger | Local-First Expense Tracker",
+    siteName: "My Flow Money",
+    title: "My Flow Money | Local-First Expense Tracker",
     description:
       "A privacy-first expense tracker with offline access, wallet tracking, smart budgeting, and analytics.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pulse Ledger | Local-First Expense Tracker",
+    title: "My Flow Money | Local-First Expense Tracker",
     description:
       "Track spending and budgets offline with a polished local-first personal finance app.",
   },

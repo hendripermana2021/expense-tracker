@@ -58,7 +58,7 @@ export default function OpenGraphImage() {
                 <div style={{ fontSize: "22px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#475569" }}>
                   Local-First Finance
                 </div>
-                <div style={{ fontSize: "56px", fontWeight: 800, letterSpacing: "-0.04em" }}>Pulse Ledger</div>
+                <div style={{ fontSize: "56px", fontWeight: 800, letterSpacing: "-0.04em" }}>My Flow Money</div>
               </div>
             </div>
 
